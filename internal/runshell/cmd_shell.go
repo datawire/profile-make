@@ -20,7 +20,7 @@ func GetProfilingShell(exe, socketName string) string {
 	args := []string{
 		fmt.Sprintf(`%s %s --profile.socket=%s`, exe, "shell", socketName),
 		`--make.level=$(MAKELEVEL)`,
-		`--make.restarts=$(MAKE_RESTARTS)`,
+		`--make.restarts=$(or $(MAKE_RESTARTS),0)`,
 		`--make.dir=$(CURDIR)`,
 		`--recipe.target=$(abspath $@)`,
 		`$(addprefix --recipe.dependency=,$(abspath $^))`,

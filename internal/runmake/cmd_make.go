@@ -7,7 +7,9 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"strings"
 
+	"github.com/pkg/errors"
 	"github.com/spf13/pflag"
 
 	"github.com/datawire/profile-make/internal/protocol"
@@ -29,7 +31,7 @@ func Main(args ...string) error {
 	if err != nil {
 		return err
 	}
-	makeArgs := argparser.Args()
+	cmdline := argparser.Args()
 
 	exe, err := os.Executable()
 	if err != nil {
@@ -52,7 +54,7 @@ func Main(args ...string) error {
 
 		shell := runshell.GetProfilingShell(exe, listenerName)
 
-		cmdline := append(append([]string{"make"}, makeArgs...), "SHELL="+shell)
+		cmdline := append(cmdline, "SHELL="+shell)
 		cmd := exec.Command(cmdline[0], cmdline[1:]...)
 		cmd.Env = append(os.Environ(),
 			"MAKEFILES="+filepath.Join(tmpdir, "stub.mk"),
@@ -63,6 +65,24 @@ func Main(args ...string) error {
 
 		cmdErr = cmd.Run()
 	})
+	if cmdErr != nil {
+		if _, ok := cmdErr.(*exec.Error); ok {
+			prefix := os.Args[:len(os.Args)-len(cmdline)]
+			suffix := os.Args[len(prefix):]
+			return errors.Errorf("%v\n"+
+				"  You wrote:\n"+
+				"      %s\n"+
+				"  Did you mean to write:\n"+
+				"      %s make %s\n"+
+				"      %*s ^^^^",
+				cmdErr,
+				strings.Join(os.Args, " "),
+				strings.Join(prefix, " "),
+				strings.Join(suffix, " "),
+				len(strings.Join(prefix, " ")), "",
+			)
+		}
+	}
 	if err != nil {
 		return err
 	}

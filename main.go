@@ -15,7 +15,7 @@ import (
 
 var usageTmpl = template.Must(template.
 	New("--help").
-	Parse(`Usage: {{ .Arg0 }} run --output-file=FILE -- [MAKE_ARGS]
+	Parse(`Usage: {{ .Arg0 }} run --output-file=FILE -- make [MAKE_ARGS]
    or: {{ .Arg0 }} visualize
    or: {{ .Arg0 }} help
 Run GNU Make under a profiler.

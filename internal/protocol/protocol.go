@@ -7,6 +7,7 @@ import (
 	"encoding/json"
 	"io/ioutil"
 	"net"
+	"os"
 	"sync"
 	"time"
 )
@@ -22,7 +23,8 @@ type ProfiledCommand struct {
 	RecipeTarget       string
 	RecipeDependencies []string
 
-	Args []string
+	Args         []string
+	ProcessState *os.ProcessState
 
 	SubCommands []ProfiledCommand
 }

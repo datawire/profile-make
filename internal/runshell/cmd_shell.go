@@ -74,6 +74,7 @@ func Main(args ...string) error {
 	listenerName := filepath.Join(tmpdir, "socket")
 
 	var cmdErr error
+	var cmdState *os.ProcessState
 	subCmds, err := protocol.WithServer(listenerName, stderrLogger{}, func() {
 		cmd := exec.Command(cmdline[0], cmdline[1:]...)
 		cmd.Stdin = os.Stdin
@@ -88,6 +89,7 @@ func Main(args ...string) error {
 		}
 
 		cmdErr = cmd.Run()
+		cmdState = cmd.ProcessState
 	})
 	if err != nil {
 		return err
@@ -108,7 +110,8 @@ func Main(args ...string) error {
 		RecipeTarget:       *argRecipeTarget,
 		RecipeDependencies: *argRecipeDependencies,
 
-		Args: cmdline,
+		Args:         cmdline,
+		ProcessState: cmdState,
 
 		SubCommands: subCmds,
 	})

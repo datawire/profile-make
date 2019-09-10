@@ -5,20 +5,35 @@ func convertProfile(rawProfile RawCommandList) *SVGProfile {
 		StartTime:  rawProfile.StartTime(),
 		FinishTime: rawProfile.FinishTime(),
 	}
-	for _, rawCommand := range rawProfile {
-		ret.Commands = append(ret.Commands, convertCommand(rawCommand, ret))
-	}
+	ret.Make = convertMake(rawProfile, ret)
 	return ret
 }
 
-func convertCommand(rawCommand RawCommand, profile *SVGProfile) SVGCommand {
-	ret := SVGCommand{
-		X:    XTime{Profile: profile, X: rawCommand.StartTime},
-		W:    XDuration{Profile: profile, W: rawCommand.FinishTime.Sub(rawCommand.StartTime)},
-		Args: rawCommand.Args,
+func convertMake(rawProfile RawCommandList, profile *SVGProfile) *SVGMake {
+	if len(rawProfile) == 0 {
+		return nil
 	}
-	for _, rawSubCommand := range rawCommand.SubCommands {
-		ret.SubCommands = append(ret.SubCommands, convertCommand(rawSubCommand, profile))
+	var ret SVGMake
+	for restartNum, numRestarts := uint(0), rawProfile.CountRestarts(); restartNum <= numRestarts; restartNum++ {
+		restart := SVGRestart{}
+		for _, rawCommand := range rawProfile {
+			if rawCommand.MakeRestarts != restartNum {
+				continue
+			}
+			name := rawCommand.RecipeTarget
+			if _, exists := restart[name]; !exists {
+				restart[name] = &SVGRecipe{
+					Name: name,
+				}
+			}
+			restart[name].Commands = append(restart[name].Commands, &SVGCommand{
+				X:       XTime{Profile: profile, X: rawCommand.StartTime},
+				W:       XDuration{Profile: profile, W: rawCommand.FinishTime.Sub(rawCommand.StartTime)},
+				Args:    rawCommand.Args,
+				SubMake: convertMake(rawCommand.SubCommands, profile),
+			})
+		}
+		ret = append(ret, &restart)
 	}
-	return ret
+	return &ret
 }

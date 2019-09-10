@@ -26,10 +26,7 @@ func Main(args ...string) error {
 
 	profileStructSVG := convertProfile(profileStructRaw)
 
-	err = mainTemplate.Execute(os.Stdout, map[string]interface{}{
-		"ProfileData": profileStructSVG,
-	})
-	if err != nil {
+	if err = profileStructSVG.SVG(os.Stdout); err != nil {
 		return err
 	}
 

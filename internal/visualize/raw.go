@@ -35,3 +35,13 @@ func (cmds RawCommandList) FinishTime() time.Time {
 	}
 	return max
 }
+
+func (cmds RawCommandList) CountRestarts() uint {
+	ret := uint(0)
+	for _, cmd := range cmds {
+		if cmd.MakeRestarts > ret {
+			ret = cmd.MakeRestarts
+		}
+	}
+	return ret
+}

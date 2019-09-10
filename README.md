@@ -17,7 +17,7 @@ run
 Then, visualize what happened with
 
     ```console
-    $ profile-make visualize <profile.json >profile.html
+    $ profile-make visualize <profile.json >profile.svg
     ```
 
 ## Limitations / gotchas

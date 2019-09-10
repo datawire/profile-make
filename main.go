@@ -10,13 +10,14 @@ import (
 	"github.com/pkg/errors"
 
 	"github.com/datawire/profile-make/internal/runmake"
+	"github.com/datawire/profile-make/internal/visualize"
 	"github.com/datawire/profile-make/internal/runshell"
 )
 
 var usageTmpl = template.Must(template.
 	New("--help").
 	Parse(`Usage: {{ .Arg0 }} run --output-file=FILE -- make [MAKE_ARGS]
-   or: {{ .Arg0 }} visualize
+   or: {{ .Arg0 }} visualize <PROFILE.json >PROFILE.svg
    or: {{ .Arg0 }} help
 Run GNU Make under a profiler.
 `))
@@ -46,7 +47,7 @@ func main() {
 	case "shell":
 		err = runshell.Main(os.Args[2:]...)
 	case "visualize":
-		panic("TODO: visualize not yet implemented")
+		err = visualize.Main(os.Args[2:]...)
 	default:
 		errusage(errors.Errorf("unrecognized sub-command: %q", os.Args[1]))
 	}

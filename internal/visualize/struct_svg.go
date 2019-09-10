@@ -12,6 +12,7 @@ import (
 var funcMap = template.FuncMap{
 	"addLines":  func(a, b YLines) YLines { return a + b },
 	"zeroLines": func() YLines { return 0 },
+	"split":     func(sep, input string) []string { return strings.Split(input, sep) },
 }
 
 type XTime struct {
@@ -42,8 +43,8 @@ func (w XDuration) Percent() string {
 
 type YLines int
 
-func (y YLines) PX() string {
-	return fmt.Sprintf("%dpx", y*20)
+func (y YLines) EM() string {
+	return fmt.Sprintf("%dem", y)
 }
 
 type SVGProfile struct {
@@ -98,14 +99,20 @@ func (cmd SVGCommand) SVG(Y YLines) (template.HTML, error) {
 	cmd.Y = Y
 	var str strings.Builder
 	err := template.Must(template.
-		New("<command>").
+		New("<x-command>").
 		Funcs(funcMap).
-		Parse(`
-			<rect x="{{ .X.Percent }}" width="{{ .W.Percent}}" y="{{ .Y.PX }}" height="{{ .Y.PX }}" style="fill: #AAAAAA; border: #FF0000" />
-			<text x="{{ .X.Percent }}" y="{{ .Y.PX }}" color="#000000">{{ .Text }}</text>
+		Parse(`<g>
+			<rect x="{{ .X.Percent }}" width="{{ .W.Percent}}" y="{{ .Y.EM }}" height="{{ .H.EM }}" style="fill: #AAAAAA; border: #FF0000" />
+			<text x="{{ .X.Percent }}" y="{{ .Y.EM }}" color="#000000" dominant-baseline="hanging">
+				{{ $dy := "0" }}
+				{{ range $line := (.Text | split "\n") }}
+					<tspan x="{{ $.X.Percent }}" dy="{{ $dy }}" xml:space="preserve">{{ $line }}</tspan>
+					{{ $dy = "1em" }}
+				{{ end }}
+			</text>
 			{{ $y := addLines .Y .BaseH }}
 			{{ range $subcmd := .SubCommands }}{{ $subcmd.SVG $y }}{{ $y = addLines $y $subcmd.H }}{{ end }}
-		`)).Execute(&str, cmd)
+		</g>`)).Execute(&str, cmd)
 	if err != nil {
 		return "", err
 	}
@@ -113,12 +120,12 @@ func (cmd SVGCommand) SVG(Y YLines) (template.HTML, error) {
 }
 
 var mainTemplate = template.Must(template.
-	New("<profile>").
+	New("<x-profile>").
 	Funcs(funcMap).
 	Parse(`{{ "" -}}
 <svg xmlns="http://www.w3.org/2000/svg"
-  width="1900px"
-  height="{{ .ProfileData.H.PX }}"
+  width="100%"
+  height="{{ .ProfileData.H.EM }}"
   >
 	{{ $y := zeroLines }}
 	{{ range $cmd := .ProfileData.Commands }}{{ $cmd.SVG $y }}{{ $y = addLines $y $cmd.H }}{{ end }}

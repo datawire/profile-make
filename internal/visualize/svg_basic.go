@@ -9,13 +9,17 @@ import (
 
 const LineHeightEM = 1.2
 
-var globalProfile *SVGProfile
-var globalLayout string
+var (
+	globalProfile        *SVGProfile
+	globalLayout         string
+	globalVerboseCommand bool
+)
 
 var funcMap = template.FuncMap{
-	"asYLines":    func(y int) YLines { return YLines(y) },
-	"asXDuration": func(x time.Duration) XDuration { return XDuration(x) },
-	"split":       func(sep, input string) []string { return strings.Split(input, sep) },
+	"asYLines":       func(y int) YLines { return YLines(y) },
+	"asXDuration":    func(x time.Duration) XDuration { return XDuration(x) },
+	"split":          func(sep, input string) []string { return strings.Split(input, sep) },
+	"verboseCommand": func() bool { return globalVerboseCommand },
 }
 
 type XDuration time.Duration

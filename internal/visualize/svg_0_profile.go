@@ -80,7 +80,7 @@ var profileTemplate = template.Must(template.
 		</defs>
 		<style>
 			* svg {
-				overflow: {{ if .Attrs.ShowOverflow }}visible{{ else }}hidden{{ end }};
+				overflow: {{ if verboseCommand }}visible{{ else }}hidden{{ end }};
 			}
 			g.make > rect {
 				fill: #CCCCCC;
@@ -104,13 +104,11 @@ var profileTemplate = template.Must(template.
 		</g>
 	</svg>`))
 
-func (p *SVGProfile) SVG(w io.Writer, layout string, showOverflow bool) error {
+func (p *SVGProfile) SVG(w io.Writer, layout string, verboseCommand bool) error {
 	globalProfile = p
 	globalLayout = layout
+	globalVerboseCommand = verboseCommand
 	return profileTemplate.Execute(w, map[string]interface{}{
-		"Attrs": map[string]interface{}{
-			"ShowOverflow": showOverflow,
-		},
 		"Data": p,
 	})
 }

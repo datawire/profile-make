@@ -75,11 +75,30 @@ func (recipe *SVGRecipe) H() YLines {
 	if recipe == nil {
 		return 0
 	}
-	var sum YLines
-	for _, cmd := range recipe.Commands {
-		sum += cmd.H()
+	if globalVerboseCommand {
+		var sum YLines
+		for _, cmd := range recipe.Commands {
+			sum += cmd.H()
+		}
+		return sum
+	} else {
+		var xCursor time.Time
+		var yCursor YLines
+		var yPending YLines
+		for _, cmd := range recipe.SortedCommands() {
+			if cmd.StartTime().After(xCursor) {
+				// happy path
+				if h := cmd.H(); h > yPending {
+					yPending = h
+				}
+			} else {
+				// sad path
+				yCursor += yPending
+				yPending = cmd.H()
+			}
+		}
+		return yCursor + yPending
 	}
-	return sum
 }
 
 var recipeTemplate = template.Must(template.
@@ -90,11 +109,29 @@ var recipeTemplate = template.Must(template.
 		      width="{{ .Data.W.PercentOf .Data.Parent.Parent.ParentW }}" height="{{ .Data.H.EM }}">
 			<title xml:space="preserve">{{ .Data.Title }}</title>
 		</rect>
-		{{ $yoff := 0 | asYLines }}
-		{{ range .Data.SortedCommands }}
-			{{ $xoff := (.StartTime.Sub $.Data.StartTime) | asXDuration }}
-			{{ .SVG ($.Attrs.X.Add $xoff) ($.Attrs.Y.Add $yoff) }}
-			{{ $yoff = $yoff.Add .H }}
+		{{ if verboseCommand }}
+			{{ $yoff := asYLines 0 }}
+			{{ range .Data.SortedCommands }}
+				{{ $xoff := (.StartTime.Sub $.Data.StartTime) | asXDuration }}
+				{{ .SVG ($.Attrs.X.Add $xoff) ($.Attrs.Y.Add $yoff) }}
+				{{ $yoff = $yoff.Add .H }}
+			{{ end }}
+		{{ else }}
+			{{ $xCursor := asXDuration 0 }}
+			{{ $yCursor := asYLines 0 }}
+			{{ $yPending := asYLines 0 }}
+			{{ range .Data.SortedCommands }}
+				{{ $xoff := (.StartTime.Sub $.Data.StartTime) | asXDuration }}
+				{{ if gt $xoff $xCursor }}
+					{{ if gt .H $yPending }}
+						{{ $yPending = .H }}
+					{{ end }}
+				{{ else }}
+					{{ $yCursor = $yCursor.Add $yPending }}
+					{{ $yPending = .H }}
+				{{ end }}
+				{{ .SVG ($.Attrs.X.Add $xoff) ($.Attrs.Y.Add $yCursor) }}
+			{{ end }}
 		{{ end }}
 	</g>`))
 

@@ -26,8 +26,8 @@ func Main(args ...string) error {
 	}
 	argparser := pflag.NewFlagSet("visualize", pflag.ContinueOnError)
 	var (
-		argLayout       = argparser.String("layout", "wallclock", fmt.Sprintf("Layout algorithm to use; one of [%v]", layouts))
-		argShowOverflow = argparser.Bool("show-overflow", false, "Display overflowed text")
+		argLayout         = argparser.String("layout", "wallclock", fmt.Sprintf("Layout algorithm to use; one of [%v]", layouts))
+		argVerboseCommand = argparser.Bool("verbose-command", false, "Fully display each command's text")
 	)
 	err := argparser.Parse(args)
 	if err != nil {
@@ -55,7 +55,7 @@ func Main(args ...string) error {
 		return err
 	}
 
-	if err = profileStructSVG.SVG(os.Stdout, *argLayout, *argShowOverflow); err != nil {
+	if err = profileStructSVG.SVG(os.Stdout, *argLayout, *argVerboseCommand); err != nil {
 		return err
 	}
 

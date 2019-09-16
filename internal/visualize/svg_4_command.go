@@ -42,7 +42,11 @@ func (cmd *SVGCommand) Title() string {
 }
 
 func (cmd *SVGCommand) BaseH() YLines {
-	return YLines(strings.Count(cmd.Text(), "\n") + 1)
+	if globalVerboseCommand {
+		return YLines(strings.Count(cmd.Text(), "\n") + 1)
+	} else {
+		return 1
+	}
 }
 
 ////////////////////////////////////////////////////////////////////////////////

@@ -30,6 +30,7 @@ func convertMake(rawCommands RawCommandList) *SVGMake {
 		return nil
 	}
 	svgMake := &SVGMake{
+		Dir:      rawCommands[0].MakeDir,
 		Restarts: nil,
 	}
 	for restartNum, numRestarts := uint(0), rawCommands.CountRestarts(); restartNum <= numRestarts; restartNum++ {

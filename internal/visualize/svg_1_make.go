@@ -10,6 +10,7 @@ import (
 
 type SVGMake struct {
 	Parent   *SVGCommand
+	Dir      string
 	Restarts []*SVGRestart
 }
 

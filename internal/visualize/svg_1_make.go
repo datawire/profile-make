@@ -100,7 +100,7 @@ var makeTemplateWallclock = template.Must(template.
 var makeTemplateCompact = template.Must(template.
 	New("<x-make>").
 	Funcs(funcMap).
-	Parse(`<svg class="make">
+	Parse(`<svg class="make"
 		    x="{{ .Attrs.X.PercentOf .Data.ParentW }}" y="{{ .Attrs.Y.EM }}"
 		    width="{{ .Data.W.PercentOf .Data.ParentW }}" height="{{ .Data.H.EM }}">
 		<title xml:space="preserve">{{ .Data.Title }}</title>

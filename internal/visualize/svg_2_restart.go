@@ -16,7 +16,7 @@ type SVGRestart struct {
 	RestartNum uint
 	Recipes    []*SVGRecipe
 
-	layout *Layout
+	layout *RestartLayout
 }
 
 func (r *SVGRestart) Title() string {
@@ -40,17 +40,17 @@ func (r *SVGRestart) TimeSortedRecipes() []*SVGRecipe {
 	return sorted
 }
 
-func (r *SVGRestart) Layout() *Layout {
+func (r *SVGRestart) Layout() *RestartLayout {
 	if r.layout == nil {
-		r.layout = new(Layout)
-		r.layout.AddRecipes(r.TimeSortedRecipes())
+		r.layout = new(RestartLayout)
+		r.layout.AddRecipes(r.Recipes)
 	}
 	return r.layout
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 
-type Layout struct {
+type RestartLayout struct {
 	recipes map[string]*SVGRecipe
 
 	xPositions map[*SVGRecipe]XDuration
@@ -59,7 +59,7 @@ type Layout struct {
 	yPositions map[*SVGRecipe]YLines
 }
 
-func (l *Layout) AddRecipes(recipes []*SVGRecipe) {
+func (l *RestartLayout) AddRecipes(recipes []*SVGRecipe) {
 	// establish name-to-struct mapping
 	l.recipes = make(map[string]*SVGRecipe, len(recipes))
 	for _, recipe := range recipes {
@@ -73,11 +73,17 @@ func (l *Layout) AddRecipes(recipes []*SVGRecipe) {
 	}
 	// establish struct-to-Y mapping
 	//
-	// XXX: using arg-recipes so that there's hope of a stable
-	// Y-ordering (also depends on being called with
-	// .TimeSortedRecipes() instead of .Recipes), until I figure out
-	// a real Y-ordering algorithm.
+	// TODO: This is a really bad, dumb algorithm
 	l.yPositions = make(map[*SVGRecipe]YLines, len(recipes))
+	sort.SliceStable(recipes, func(i, j int) bool {
+		xi := l.X(recipes[i])
+		xj := l.X(recipes[j])
+		if xi == xj {
+			// as a tie-breaker, list the wider one first
+			return recipes[i].W() > recipes[j].W()
+		}
+		return xi < xj
+	})
 	for _, recipe := range recipes {
 		x := l.X(recipe)
 		w := recipe.W()
@@ -91,7 +97,7 @@ func (l *Layout) AddRecipes(recipes []*SVGRecipe) {
 	}
 }
 
-func (l *Layout) solveX(recipe *SVGRecipe) XDuration {
+func (l *RestartLayout) solveX(recipe *SVGRecipe) XDuration {
 	if _, solved := l.xPositions[recipe]; !solved {
 		var max XDuration
 		depNames := recipe.Dependencies()
@@ -112,7 +118,7 @@ func (l *Layout) solveX(recipe *SVGRecipe) XDuration {
 	return l.xPositions[recipe]
 }
 
-func (l *Layout) rectAdd(x XDuration, y YLines, w XDuration, h YLines) {
+func (l *RestartLayout) rectAdd(x XDuration, y YLines, w XDuration, h YLines) {
 	for YLines(len(l.rows)) < y+h {
 		l.rows = append(l.rows, 0)
 	}
@@ -123,7 +129,7 @@ func (l *Layout) rectAdd(x XDuration, y YLines, w XDuration, h YLines) {
 	}
 }
 
-func (l Layout) rectAvailable(x XDuration, y YLines, w XDuration, h YLines) bool {
+func (l *RestartLayout) rectAvailable(x XDuration, y YLines, w XDuration, h YLines) bool {
 	for iy := y; iy < y+h; iy++ {
 		if iy < YLines(len(l.rows)) && l.rows[iy] > x {
 			return false
@@ -132,7 +138,7 @@ func (l Layout) rectAvailable(x XDuration, y YLines, w XDuration, h YLines) bool
 	return true
 }
 
-func (l Layout) X(recipe *SVGRecipe) XDuration {
+func (l *RestartLayout) X(recipe *SVGRecipe) XDuration {
 	x, ok := l.xPositions[recipe]
 	if !ok {
 		panic("non-layed-out recipe")
@@ -140,7 +146,7 @@ func (l Layout) X(recipe *SVGRecipe) XDuration {
 	return x
 }
 
-func (l Layout) Y(recipe *SVGRecipe) YLines {
+func (l *RestartLayout) Y(recipe *SVGRecipe) YLines {
 	y, ok := l.yPositions[recipe]
 	if !ok {
 		panic("non-layed-out recipe")
@@ -148,7 +154,7 @@ func (l Layout) Y(recipe *SVGRecipe) YLines {
 	return y
 }
 
-func (l Layout) W() XDuration {
+func (l *RestartLayout) W() XDuration {
 	var max XDuration
 	for _, w := range l.rows {
 		if w > max {
@@ -158,7 +164,7 @@ func (l Layout) W() XDuration {
 	return max
 }
 
-func (l Layout) H() YLines {
+func (l *RestartLayout) H() YLines {
 	return YLines(len(l.rows))
 }
 
@@ -216,7 +222,7 @@ func (r *SVGRestart) H() YLines {
 		}
 		return sum
 	case "compact":
-		return r.Layout().H()+2
+		return r.Layout().H() + 2
 	default:
 		panic(errors.Errorf("invalid layout %q", globalLayout))
 	}

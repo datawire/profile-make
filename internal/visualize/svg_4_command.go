@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/alessio/shellescape"
+	"github.com/pkg/errors"
 )
 
 type SVGCommand struct {
@@ -69,7 +70,26 @@ func (cmd *SVGCommand) W() XDuration {
 	if cmd == nil {
 		return 0
 	}
-	return XDuration(cmd.FinishTime().Sub(cmd.StartTime()))
+	switch globalLayout {
+	case "wallclock":
+		return XDuration(cmd.FinishTime().Sub(cmd.StartTime()))
+	case "compact":
+		switch len(cmd.SubMakes) {
+		case 1:
+			var sub *SVGMake
+			for _, m := range cmd.SubMakes {
+				sub = m
+			}
+			cmdWall := XDuration(cmd.FinishTime().Sub(cmd.StartTime()))
+			subWall := XDuration(sub.FinishTime().Sub(sub.StartTime()))
+			subCompact := sub.W()
+			return subCompact + (cmdWall - subWall)
+		default:
+			return XDuration(cmd.FinishTime().Sub(cmd.StartTime()))
+		}
+	default:
+		panic(errors.Errorf("invalid layout %q", globalLayout))
+	}
 }
 
 func (cmd *SVGCommand) H() YLines {

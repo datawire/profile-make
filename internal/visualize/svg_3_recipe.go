@@ -82,7 +82,13 @@ func (recipe *SVGRecipe) W() XDuration {
 	if recipe == nil {
 		return 0
 	}
-	return XDuration(recipe.FinishTime().Sub(recipe.StartTime()))
+	var max XDuration
+	for _, cmd := range recipe.Commands {
+		if w := cmd.W(); w > max {
+			max = w
+		}
+	}
+	return max
 }
 
 func (recipe *SVGRecipe) H() YLines {

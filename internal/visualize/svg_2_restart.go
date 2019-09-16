@@ -1,7 +1,9 @@
 package visualize
 
 import (
+	"fmt"
 	"html/template"
+	"path/filepath"
 	"sort"
 	"strings"
 	"time"
@@ -10,8 +12,21 @@ import (
 )
 
 type SVGRestart struct {
-	Parent  *SVGMake
-	Recipes []*SVGRecipe
+	Parent     *SVGMake
+	RestartNum uint
+	Recipes    []*SVGRecipe
+}
+
+func (r *SVGRestart) Title() string {
+	dir, err := filepath.Rel(globalProfile.Make.Dir, r.Parent.Dir)
+	if err != nil {
+		dir = r.Parent.Dir
+	}
+	return fmt.Sprintf("Make/Restart\n"+
+		"Dir: %q\n"+
+		"Restart: %d",
+		dir,
+		r.RestartNum)
 }
 
 func (r *SVGRestart) TimeSortedRecipes() []*SVGRecipe {
@@ -91,7 +106,9 @@ var restartTemplateWallclock = template.Must(template.
 	Funcs(funcMap).
 	Parse(`<g class="restart">
 		<rect x="{{ .Attrs.X.Percent }}" y="{{ .Attrs.Y.EM }}"
-		      width="{{ .Data.W.Percent }}" height="{{ .Data.H.EM }}" />
+		      width="{{ .Data.W.Percent }}" height="{{ .Data.H.EM }}">
+			<title xml:space="preserve">{{ .Data.Title }}</title>
+		</rect>
 		{{ $yoff := 0 | asYLines }}
 		{{ range .Data.TimeSortedRecipes }}
 			{{ $xoff := (.StartTime.Sub $.Data.StartTime) | asXDuration }}

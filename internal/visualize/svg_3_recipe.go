@@ -1,9 +1,11 @@
 package visualize
 
 import (
+	"fmt"
 	"html/template"
-	"strings"
+	"path/filepath"
 	"sort"
+	"strings"
 	"time"
 )
 
@@ -11,6 +13,18 @@ type SVGRecipe struct {
 	Parent   *SVGRestart
 	Name     string
 	Commands []*SVGCommand
+}
+
+func (recipe *SVGRecipe) Title() string {
+	target, err := filepath.Rel(globalProfile.Make.Dir, recipe.Name)
+	if err != nil {
+		target = recipe.Name
+	}
+	return fmt.Sprintf("Make/Restart/Recipe\n"+
+		"Target: %q\n"+
+		"Duration: %s",
+		target,
+		recipe.FinishTime().Sub(recipe.StartTime()))
 }
 
 func (recipe *SVGRecipe) SortedCommands() []*SVGCommand {
@@ -73,7 +87,9 @@ var recipeTemplate = template.Must(template.
 	Funcs(funcMap).
 	Parse(`<g class="recipe">
 		<rect x="{{ .Attrs.X.Percent }}" y="{{ .Attrs.Y.EM }}"
-		      width="{{ .Data.W.Percent }}" height="{{ .Data.H.EM }}" />
+		      width="{{ .Data.W.Percent }}" height="{{ .Data.H.EM }}">
+			<title xml:space="preserve">{{ .Data.Title }}</title>
+		</rect>
 		{{ $yoff := 0 | asYLines }}
 		{{ range .Data.SortedCommands }}
 			{{ $xoff := (.StartTime.Sub $.Data.StartTime) | asXDuration }}

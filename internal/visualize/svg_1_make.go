@@ -1,7 +1,9 @@
 package visualize
 
 import (
+	"fmt"
 	"html/template"
+	"path/filepath"
 	"strings"
 	"time"
 
@@ -13,6 +15,18 @@ type SVGMake struct {
 	Dir      string
 	Restarts []*SVGRestart
 }
+
+func (m *SVGMake) Title() string {
+	dir, err := filepath.Rel(globalProfile.Make.Dir, m.Dir)
+	if err != nil {
+		dir = m.Dir
+	}
+	return fmt.Sprintf("Make\n"+
+		"Dir: %q",
+		dir)
+}
+
+////////////////////////////////////////////////////////////////////////////////
 
 func (m *SVGMake) StartTime() time.Time {
 	if m == nil || len(m.Restarts) == 0 {
@@ -64,7 +78,9 @@ var makeTemplateWallclock = template.Must(template.
 	Funcs(funcMap).
 	Parse(`<g class="make">
 		<rect x="{{ .Attrs.X.Percent }}" y="{{ .Attrs.Y.EM }}"
-		      width="{{ .Data.W.Percent }}" height="{{ .Data.H.EM }}" />
+		      width="{{ .Data.W.Percent }}" height="{{ .Data.H.EM }}">
+			<title xml:space="preserve">{{ .Data.Title }}</title>
+		</rect>
 		{{ range .Data.Restarts }}
 			{{ $xoff := (.StartTime.Sub $.Data.StartTime) | asXDuration }}
 			{{ .SVG ($.Attrs.X.Add $xoff) ($.Attrs.Y) }}
@@ -76,7 +92,9 @@ var makeTemplateCompact = template.Must(template.
 	Funcs(funcMap).
 	Parse(`<g class="make">
 		<rect x="{{ .Attrs.X.Percent }}" y="{{ .Attrs.Y.EM }}"
-		      width="{{ .Data.W.Percent }}" height="{{ .Data.H.EM }}" />
+		      width="{{ .Data.W.Percent }}" height="{{ .Data.H.EM }}">
+			<title xml:space="preserve">{{ .Data.Title }}</title>
+		</rect>
 		{{ $xoff := 0 | asXDuration }}
 		{{ range .Data.Restarts }}
 			{{ .SVG ($.Attrs.X.Add $xoff) ($.Attrs.Y) }}

@@ -35,7 +35,8 @@ func convertMake(rawCommands RawCommandList) *SVGMake {
 	}
 	for restartNum, numRestarts := uint(0), rawCommands.CountRestarts(); restartNum <= numRestarts; restartNum++ {
 		svgRestart := &SVGRestart{
-			Parent: svgMake,
+			Parent:     svgMake,
+			RestartNum: restartNum,
 		}
 		recipes := make(map[string]*SVGRecipe)
 		for _, rawCommand := range rawCommands {

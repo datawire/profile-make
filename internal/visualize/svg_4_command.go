@@ -3,6 +3,7 @@ package visualize
 import (
 	"fmt"
 	"html/template"
+	"path/filepath"
 	"strings"
 	"time"
 
@@ -27,11 +28,15 @@ func (cmd *SVGCommand) Text() string {
 }
 
 func (cmd *SVGCommand) Title() string {
-	return fmt.Sprintf(""+
+	target, err := filepath.Rel(globalProfile.Make.Dir, cmd.Raw.RecipeTarget)
+	if err != nil {
+		target = cmd.Raw.RecipeTarget
+	}
+	return fmt.Sprintf("Make/Restart/Recipe/Command\n"+
 		"Target: %q\n"+
 		"Duration: %s\n"+
 		"Command: \n%s",
-		cmd.Raw.RecipeTarget,
+		target,
 		cmd.FinishTime().Sub(cmd.StartTime()),
 		cmd.Text())
 }

@@ -222,7 +222,7 @@ func (r *SVGRestart) H() YLines {
 		}
 		return sum
 	case "compact":
-		return r.Layout().H() + 2
+		return r.Layout().H()
 	default:
 		panic(errors.Errorf("invalid layout %q", globalLayout))
 	}
@@ -253,7 +253,7 @@ var restartTemplateCompact = template.Must(template.
 		<title xml:space="preserve">{{ .Data.Title }}</title>
 		<rect class="background" x="0" y="0" width="100%" height="100%" />
 		{{ range .Data.TimeSortedRecipes }}
-			{{ .SVG ($.Data.Layout.X .) (($.Data.Layout.Y .).Add 1) }}
+			{{ .SVG ($.Data.Layout.X .) ($.Data.Layout.Y .) }}
 		{{ end }}
 	</svg>`))
 

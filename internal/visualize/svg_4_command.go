@@ -10,6 +10,7 @@ import (
 )
 
 type SVGCommand struct {
+	Parent   *SVGRecipe
 	Raw      RawCommand
 	SubMakes map[string]*SVGMake // key is CURDIR
 }

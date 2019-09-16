@@ -29,10 +29,13 @@ func convertMake(rawCommands RawCommandList) *SVGMake {
 	if len(rawCommands) == 0 {
 		return nil
 	}
-	ret := &SVGMake{
+	svgMake := &SVGMake{
 		Restarts: nil,
 	}
 	for restartNum, numRestarts := uint(0), rawCommands.CountRestarts(); restartNum <= numRestarts; restartNum++ {
+		svgRestart := &SVGRestart{
+			Parent: svgMake,
+		}
 		recipes := make(map[string]*SVGRecipe)
 		for _, rawCommand := range rawCommands {
 			if rawCommand.MakeRestarts != restartNum {
@@ -41,23 +44,26 @@ func convertMake(rawCommands RawCommandList) *SVGMake {
 			name := rawCommand.RecipeTarget
 			if _, exists := recipes[name]; !exists {
 				recipes[name] = &SVGRecipe{
-					Name: name,
+					Parent: svgRestart,
+					Name:   name,
 				}
 			}
-			recipes[name].Commands = append(recipes[name].Commands, &SVGCommand{
+			cmd := &SVGCommand{
+				Parent:   recipes[name],
 				Raw:      rawCommand,
 				SubMakes: convertMakes(RawCommandList(rawCommand.SubCommands)),
-			})
-		}
-		restart := &SVGRestart{
-			Recipes: make([]*SVGRecipe, 0, len(recipes)),
+			}
+			for _, submake := range cmd.SubMakes {
+				submake.Parent = cmd
+			}
+			recipes[name].Commands = append(recipes[name].Commands, cmd)
 		}
 		for _, recipe := range recipes {
-			restart.Recipes = append(restart.Recipes, recipe)
+			svgRestart.Recipes = append(svgRestart.Recipes, recipe)
 		}
-		ret.Restarts = append(ret.Restarts, restart)
+		svgMake.Restarts = append(svgMake.Restarts, svgRestart)
 	}
-	return ret
+	return svgMake
 }
 
 func convertMakes(rawCommands RawCommandList) map[string]*SVGMake {

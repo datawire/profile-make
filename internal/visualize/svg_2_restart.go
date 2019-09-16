@@ -10,6 +10,7 @@ import (
 )
 
 type SVGRestart struct {
+	Parent  *SVGMake
 	Recipes []*SVGRecipe
 }
 

@@ -8,6 +8,7 @@ import (
 )
 
 type SVGRecipe struct {
+	Parent   *SVGRestart
 	Name     string
 	Commands []*SVGCommand
 }

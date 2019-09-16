@@ -9,6 +9,7 @@ import (
 )
 
 type SVGMake struct {
+	Parent   *SVGCommand
 	Restarts []*SVGRestart
 }
 

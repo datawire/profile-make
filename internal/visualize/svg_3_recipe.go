@@ -36,6 +36,20 @@ func (recipe *SVGRecipe) SortedCommands() []*SVGCommand {
 	return sorted
 }
 
+func (recipe *SVGRecipe) Dependencies() []string {
+	set := make(map[string]struct{})
+	for _, cmd := range recipe.Commands {
+		for _, dep := range cmd.Raw.RecipeDependencies {
+			set[dep] = struct{}{}
+		}
+	}
+	ret := make([]string, 0, len(set))
+	for dep := range set {
+		ret = append(ret, dep)
+	}
+	return ret
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 
 func (recipe *SVGRecipe) StartTime() time.Time {

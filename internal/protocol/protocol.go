@@ -148,7 +148,7 @@ func WithServer(listenerName string, log Logger, fn func()) ([]ProfiledCommand, 
 	var serverCmds []ProfiledCommand
 	go func() {
 		defer serverLock.Unlock()
-		serverCmds, serverErr = RunServer(serverCtx, listener.(Listener) /*TODO*/, nil)
+		serverCmds, serverErr = RunServer(serverCtx, listener.(Listener), log)
 	}()
 
 	// run the function

@@ -26,7 +26,7 @@ func Main(args ...string) error {
 	}
 	argparser := pflag.NewFlagSet("visualize", pflag.ContinueOnError)
 	var (
-		argLayout         = argparser.String("layout", "wallclock", fmt.Sprintf("Layout algorithm to use; one of [%v]", layouts))
+		argLayout         = argparser.String("layout", "compact", fmt.Sprintf("Layout algorithm to use; one of [%v]", layouts))
 		argVerboseCommand = argparser.Bool("verbose-command", false, "Fully display each command's text")
 	)
 	err := argparser.Parse(args)

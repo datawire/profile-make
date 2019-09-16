@@ -79,6 +79,9 @@ var profileTemplate = template.Must(template.
 			</filter>
 		</defs>
 		<style>
+			* svg {
+				overflow: {{ if .Attrs.ShowOverflow }}visible{{ else }}hidden{{ end }};
+			}
 			g.make > rect {
 				fill: #CCCCCC;
 				filter: url(#inset-shadow-black);
@@ -91,7 +94,7 @@ var profileTemplate = template.Must(template.
 				fill: #666666;
 				filter: url(#inset-shadow-black);
 			}
-			g.command > rect {
+			svg.command > rect.background {
 				fill: #333333;
 				filter: url(#inset-shadow-black);
 			}
@@ -101,10 +104,13 @@ var profileTemplate = template.Must(template.
 		</g>
 	</svg>`))
 
-func (p *SVGProfile) SVG(w io.Writer, layout string) error {
+func (p *SVGProfile) SVG(w io.Writer, layout string, showOverflow bool) error {
 	globalProfile = p
 	globalLayout = layout
 	return profileTemplate.Execute(w, map[string]interface{}{
+		"Attrs": map[string]interface{}{
+			"ShowOverflow": showOverflow,
+		},
 		"Data": p,
 	})
 }

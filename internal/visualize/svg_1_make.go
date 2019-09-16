@@ -26,6 +26,16 @@ func (m *SVGMake) Title() string {
 		dir)
 }
 
+func (m *SVGMake) ParentW() XDuration {
+	if m == nil {
+		return 0
+	}
+	if m.Parent == nil {
+		return m.W()
+	}
+	return m.Parent.W()
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 
 func (m *SVGMake) StartTime() time.Time {
@@ -77,8 +87,8 @@ var makeTemplateWallclock = template.Must(template.
 	New("<x-make>").
 	Funcs(funcMap).
 	Parse(`<g class="make">
-		<rect x="{{ .Attrs.X.Percent }}" y="{{ .Attrs.Y.EM }}"
-		      width="{{ .Data.W.Percent }}" height="{{ .Data.H.EM }}">
+		<rect x="{{ .Attrs.X.PercentOf .Data.ParentW }}" y="{{ .Attrs.Y.EM }}"
+		      width="{{ .Data.W.PercentOf .Data.ParentW }}" height="{{ .Data.H.EM }}">
 			<title xml:space="preserve">{{ .Data.Title }}</title>
 		</rect>
 		{{ range .Data.Restarts }}
@@ -91,8 +101,8 @@ var makeTemplateCompact = template.Must(template.
 	New("<x-make>").
 	Funcs(funcMap).
 	Parse(`<g class="make">
-		<rect x="{{ .Attrs.X.Percent }}" y="{{ .Attrs.Y.EM }}"
-		      width="{{ .Data.W.Percent }}" height="{{ .Data.H.EM }}">
+		<rect x="{{ .Attrs.X.PercentOf .Data.ParentW }}" y="{{ .Attrs.Y.EM }}"
+		      width="{{ .Data.W.PercentOf .Data.ParentW }}" height="{{ .Data.H.EM }}">
 			<title xml:space="preserve">{{ .Data.Title }}</title>
 		</rect>
 		{{ $xoff := 0 | asXDuration }}

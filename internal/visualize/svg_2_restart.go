@@ -105,8 +105,8 @@ var restartTemplateWallclock = template.Must(template.
 	New("<x-restart>").
 	Funcs(funcMap).
 	Parse(`<g class="restart">
-		<rect x="{{ .Attrs.X.Percent }}" y="{{ .Attrs.Y.EM }}"
-		      width="{{ .Data.W.Percent }}" height="{{ .Data.H.EM }}">
+		<rect x="{{ .Attrs.X.PercentOf .Data.Parent.ParentW }}" y="{{ .Attrs.Y.EM }}"
+		      width="{{ .Data.W.PercentOf .Data.Parent.ParentW }}" height="{{ .Data.H.EM }}">
 			<title xml:space="preserve">{{ .Data.Title }}</title>
 		</rect>
 		{{ $yoff := 0 | asYLines }}

@@ -86,8 +86,8 @@ var recipeTemplate = template.Must(template.
 	New("<x-recipe>").
 	Funcs(funcMap).
 	Parse(`<g class="recipe">
-		<rect x="{{ .Attrs.X.Percent }}" y="{{ .Attrs.Y.EM }}"
-		      width="{{ .Data.W.Percent }}" height="{{ .Data.H.EM }}">
+		<rect x="{{ .Attrs.X.PercentOf .Data.Parent.Parent.ParentW }}" y="{{ .Attrs.Y.EM }}"
+		      width="{{ .Data.W.PercentOf .Data.Parent.Parent.ParentW }}" height="{{ .Data.H.EM }}">
 			<title xml:space="preserve">{{ .Data.Title }}</title>
 		</rect>
 		{{ $yoff := 0 | asYLines }}

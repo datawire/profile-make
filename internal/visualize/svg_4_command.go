@@ -79,16 +79,15 @@ func (cmd *SVGCommand) H() YLines {
 var commandTemplate = template.Must(template.
 	New("<x-command>").
 	Funcs(funcMap).
-	Parse(`<g class="command">
-		<rect x="{{ .Attrs.X.Percent }}" y="{{ .Attrs.Y.EM }}" 
-		      width="{{ .Data.W.Percent}}" height="{{ .Data.H.EM }}">
-			<title xml:space="preserve">{{ .Data.Title }}</title>
-		</rect>
-		<text x="{{ .Attrs.X.Percent }}" y="{{ .Attrs.Y.EM }}" dominant-baseline="hanging">
-			<title xml:space="preserve">{{ .Data.Title }}</title>
+	Parse(`<svg class="command"
+		   x="{{ .Attrs.X.PercentOf .Data.Parent.Parent.Parent.ParentW }}" y="{{ .Attrs.Y.EM }}"
+		   width="{{ .Data.W.PercentOf .Data.Parent.Parent.Parent.ParentW}}" height="{{ .Data.H.EM }}">
+		<title xml:space="preserve">{{ .Data.Title }}</title>
+		<rect class="background" x="0" y="0" width="100%" height="100%" />
+		<text x="0" y="0" dominant-baseline="hanging">
 			{{ $dy := "0" }}
 			{{ range $line := (.Data.Text | split "\n") }}
-				<tspan x="{{ $.Attrs.X.Percent }}" dy="{{ $dy }}" xml:space="preserve">{{ $line }}</tspan>
+				<tspan x="0" dy="{{ $dy }}" xml:space="preserve">{{ $line }}</tspan>
 				{{ $dy = (asYLines 1).EM }}
 			{{ end }}
 		</text>
@@ -98,7 +97,7 @@ var commandTemplate = template.Must(template.
 			{{ .SVG ($.Attrs.X.Add $xoff) ($.Attrs.Y.Add $yoff) }}
 			{{ $yoff = $yoff.Add .H }}
 		{{ end }}
-	</g>`))
+	</svg>`))
 
 func (cmd *SVGCommand) SVG(X XDuration, Y YLines) (template.HTML, error) {
 	var str strings.Builder

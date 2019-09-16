@@ -20,8 +20,8 @@ var funcMap = template.FuncMap{
 
 type XDuration time.Duration
 
-func (d XDuration) Percent() string {
-	return fmt.Sprintf("%f%%", 100*float64(d)/float64(globalProfile.Duration()))
+func (d XDuration) PercentOf(parent XDuration) string {
+	return fmt.Sprintf("%f%%", 100*float64(d)/float64(parent))
 }
 
 func (a XDuration) Add(b XDuration) XDuration {

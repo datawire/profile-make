@@ -3,6 +3,7 @@ package visualize
 import (
 	"html/template"
 	"strings"
+	"sort"
 	"time"
 )
 
@@ -10,6 +11,17 @@ type SVGRecipe struct {
 	Name     string
 	Commands []*SVGCommand
 }
+
+func (recipe *SVGRecipe) SortedCommands() []*SVGCommand {
+	if recipe == nil {
+		return nil
+	}
+	sorted := append([]*SVGCommand(nil), recipe.Commands...)
+	sort.SliceStable(sorted, func(i, j int) bool { return sorted[i].StartTime().Before(sorted[j].StartTime()) })
+	return sorted
+}
+
+////////////////////////////////////////////////////////////////////////////////
 
 func (recipe *SVGRecipe) StartTime() time.Time {
 	if recipe == nil || len(recipe.Commands) == 0 {
@@ -62,7 +74,7 @@ var recipeTemplate = template.Must(template.
 		<rect x="{{ .Attrs.X.Percent }}" y="{{ .Attrs.Y.EM }}"
 		      width="{{ .Data.W.Percent }}" height="{{ .Data.H.EM }}" />
 		{{ $yoff := 0 | asYLines }}
-		{{ range .Data.Commands }}
+		{{ range .Data.SortedCommands }}
 			{{ $xoff := (.StartTime.Sub $.Data.StartTime) | asXDuration }}
 			{{ .SVG ($.Attrs.X.Add $xoff) ($.Attrs.Y.Add $yoff) }}
 			{{ $yoff = $yoff.Add .H }}

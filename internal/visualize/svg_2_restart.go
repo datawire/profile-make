@@ -2,6 +2,7 @@ package visualize
 
 import (
 	"html/template"
+	"sort"
 	"strings"
 	"time"
 
@@ -11,6 +12,17 @@ import (
 type SVGRestart struct {
 	Recipes []*SVGRecipe
 }
+
+func (r *SVGRestart) TimeSortedRecipes() []*SVGRecipe {
+	if r == nil {
+		return nil
+	}
+	sorted := append([]*SVGRecipe(nil), r.Recipes...)
+	sort.SliceStable(sorted, func(i, j int) bool { return sorted[i].StartTime().Before(sorted[j].StartTime()) })
+	return sorted
+}
+
+////////////////////////////////////////////////////////////////////////////////
 
 func (r *SVGRestart) StartTime() time.Time {
 	if r == nil || len(r.Recipes) == 0 {
@@ -80,7 +92,7 @@ var restartTemplateWallclock = template.Must(template.
 		<rect x="{{ .Attrs.X.Percent }}" y="{{ .Attrs.Y.EM }}"
 		      width="{{ .Data.W.Percent }}" height="{{ .Data.H.EM }}" />
 		{{ $yoff := 0 | asYLines }}
-		{{ range .Data.Recipes }}
+		{{ range .Data.TimeSortedRecipes }}
 			{{ $xoff := (.StartTime.Sub $.Data.StartTime) | asXDuration }}
 			{{ .SVG ($.Attrs.X.Add $xoff) ($.Attrs.Y.Add $yoff) }}
 			{{ $yoff = $yoff.Add .H }}

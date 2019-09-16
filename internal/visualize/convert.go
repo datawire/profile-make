@@ -45,10 +45,8 @@ func convertMake(rawCommands RawCommandList) *SVGMake {
 				}
 			}
 			recipes[name].Commands = append(recipes[name].Commands, &SVGCommand{
-				startTime:  rawCommand.StartTime,
-				finishTime: rawCommand.FinishTime,
-				Args:       rawCommand.Args,
-				SubMakes:   convertMakes(RawCommandList(rawCommand.SubCommands)),
+				Raw:      rawCommand,
+				SubMakes: convertMakes(RawCommandList(rawCommand.SubCommands)),
 			})
 		}
 		restart := &SVGRestart{

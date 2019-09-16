@@ -1,39 +1,82 @@
 package visualize
 
-func convertProfile(rawProfile RawCommandList) *SVGProfile {
-	ret := &SVGProfile{
-		StartTime:  rawProfile.StartTime(),
-		FinishTime: rawProfile.FinishTime(),
+import (
+	"github.com/pkg/errors"
+)
+
+func convertProfile(rawProfile RawProfile) (*SVGProfile, error) {
+	makes := convertMakes(RawCommandList(rawProfile.Commands))
+	var make *SVGMake
+	switch len(makes) {
+	case 0:
+		// do nothing
+	case 1:
+		for _, m := range makes {
+			make = m
+		}
+	default:
+		return nil, errors.New("CURDIR is inconsistent between top-level commands")
 	}
-	ret.Make = convertMake(rawProfile, ret)
-	return ret
+
+	return &SVGProfile{
+		StartTime:  rawProfile.StartTime,
+		FinishTime: rawProfile.FinishTime,
+		Make:       make,
+	}, nil
 }
 
-func convertMake(rawProfile RawCommandList, profile *SVGProfile) *SVGMake {
-	if len(rawProfile) == 0 {
+func convertMake(rawCommands RawCommandList) *SVGMake {
+	if len(rawCommands) == 0 {
 		return nil
 	}
-	var ret SVGMake
-	for restartNum, numRestarts := uint(0), rawProfile.CountRestarts(); restartNum <= numRestarts; restartNum++ {
-		restart := SVGRestart{}
-		for _, rawCommand := range rawProfile {
+	ret := &SVGMake{
+		Restarts: nil,
+	}
+	for restartNum, numRestarts := uint(0), rawCommands.CountRestarts(); restartNum <= numRestarts; restartNum++ {
+		recipes := make(map[string]*SVGRecipe)
+		for _, rawCommand := range rawCommands {
 			if rawCommand.MakeRestarts != restartNum {
 				continue
 			}
 			name := rawCommand.RecipeTarget
-			if _, exists := restart[name]; !exists {
-				restart[name] = &SVGRecipe{
+			if _, exists := recipes[name]; !exists {
+				recipes[name] = &SVGRecipe{
 					Name: name,
 				}
 			}
-			restart[name].Commands = append(restart[name].Commands, &SVGCommand{
-				X:       XTime{Profile: profile, X: rawCommand.StartTime},
-				W:       XDuration{Profile: profile, W: rawCommand.FinishTime.Sub(rawCommand.StartTime)},
-				Args:    rawCommand.Args,
-				SubMake: convertMake(rawCommand.SubCommands, profile),
+			recipes[name].Commands = append(recipes[name].Commands, &SVGCommand{
+				startTime:  rawCommand.StartTime,
+				finishTime: rawCommand.FinishTime,
+				Args:       rawCommand.Args,
+				SubMakes:   convertMakes(RawCommandList(rawCommand.SubCommands)),
 			})
 		}
-		ret = append(ret, &restart)
+		restart := &SVGRestart{
+			Recipes: make([]*SVGRecipe, 0, len(recipes)),
+		}
+		for _, recipe := range recipes {
+			restart.Recipes = append(restart.Recipes, recipe)
+		}
+		ret.Restarts = append(ret.Restarts, restart)
 	}
-	return &ret
+	return ret
+}
+
+func convertMakes(rawCommands RawCommandList) map[string]*SVGMake {
+	if len(rawCommands) == 0 {
+		return nil
+	}
+	// TODO: maybe look for non-monotinic MakeRestarts?
+	sets := make(map[string]RawCommandList)
+	for _, cmd := range rawCommands {
+		if _, exists := sets[cmd.MakeDir]; !exists {
+			sets[cmd.MakeDir] = nil
+		}
+		sets[cmd.MakeDir] = append(sets[cmd.MakeDir], cmd)
+	}
+	makes := make(map[string]*SVGMake, len(sets))
+	for dir, cmds := range sets {
+		makes[dir] = convertMake(cmds)
+	}
+	return makes
 }

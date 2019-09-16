@@ -12,6 +12,12 @@ import (
 	"time"
 )
 
+type Profile struct {
+	StartTime  time.Time
+	FinishTime time.Time
+	Commands   []ProfiledCommand
+}
+
 type ProfiledCommand struct {
 	StartTime  time.Time
 	FinishTime time.Time

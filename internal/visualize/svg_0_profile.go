@@ -4,6 +4,8 @@ import (
 	"html/template"
 	"io"
 	"time"
+
+	"github.com/pkg/errors"
 )
 
 type SVGProfile struct {
@@ -14,6 +16,17 @@ type SVGProfile struct {
 
 func (p *SVGProfile) Duration() time.Duration {
 	return p.FinishTime.Sub(p.StartTime)
+}
+
+func (p *SVGProfile) W() XDuration {
+	switch globalLayout {
+	case "wallclock":
+		return XDuration(p.Duration())
+	case "compact":
+		return p.Make.W()
+	default:
+		panic(errors.Errorf("invalid layout %q", globalLayout))
+	}
 }
 
 func (p *SVGProfile) H() YLines {
@@ -32,11 +45,13 @@ var profileTemplate = template.Must(template.
 			}
 		</style>
 		<g>
-			{{ .Data.Make.SVG zeroTime zeroLines }}
+			{{ .Data.Make.SVG (asXDuration 0) (asYLines 0) }}
 		</g>
 	</svg>`))
 
-func (p *SVGProfile) SVG(w io.Writer) error {
+func (p *SVGProfile) SVG(w io.Writer, layout string) error {
+	globalProfile = p
+	globalLayout = layout
 	return profileTemplate.Execute(w, map[string]interface{}{
 		"Data": p,
 	})

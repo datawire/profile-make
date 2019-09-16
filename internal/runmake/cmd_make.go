@@ -8,6 +8,7 @@ import (
 	"os/exec"
 	"path/filepath"
 	"strings"
+	"time"
 
 	"github.com/pkg/errors"
 	"github.com/spf13/pflag"
@@ -49,6 +50,7 @@ func Main(args ...string) error {
 	}
 	listenerName := filepath.Join(tmpdir, "socket")
 
+	startTime := time.Now()
 	var cmdErr error
 	cmds, err := protocol.WithServer(listenerName, stderrLogger{}, func() {
 
@@ -86,13 +88,19 @@ func Main(args ...string) error {
 	if err != nil {
 		return err
 	}
+	finishTime := time.Now()
 
 	file, err := os.OpenFile(*argOutputFile, os.O_WRONLY|os.O_CREATE, 0666)
 	if err != nil {
 		return err
 	}
 	defer file.Close()
-	if err := json.NewEncoder(file).Encode(cmds); err != nil {
+	profile := protocol.Profile{
+		StartTime:  startTime,
+		FinishTime: finishTime,
+		Commands:   cmds,
+	}
+	if err := json.NewEncoder(file).Encode(profile); err != nil {
 		return err
 	}
 

@@ -6,6 +6,8 @@ import (
 	"github.com/datawire/profile-make/internal/protocol"
 )
 
+type RawProfile = protocol.Profile
+
 type RawCommand = protocol.ProfiledCommand
 
 type RawCommandList []RawCommand

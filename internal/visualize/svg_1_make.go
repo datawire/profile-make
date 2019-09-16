@@ -86,31 +86,31 @@ func (m *SVGMake) H() YLines {
 var makeTemplateWallclock = template.Must(template.
 	New("<x-make>").
 	Funcs(funcMap).
-	Parse(`<g class="make">
-		<rect x="{{ .Attrs.X.PercentOf .Data.ParentW }}" y="{{ .Attrs.Y.EM }}"
-		      width="{{ .Data.W.PercentOf .Data.ParentW }}" height="{{ .Data.H.EM }}">
-			<title xml:space="preserve">{{ .Data.Title }}</title>
-		</rect>
+	Parse(`<svg class="make"
+		    x="{{ .Attrs.X.PercentOf .Data.ParentW }}" y="{{ .Attrs.Y.EM }}"
+		    width="{{ .Data.W.PercentOf .Data.ParentW }}" height="{{ .Data.H.EM }}">
+		<title xml:space="preserve">{{ .Data.Title }}</title>
+		<rect class="background" x="0" y="0" width="100%" height="100%" />
 		{{ range .Data.Restarts }}
 			{{ $xoff := (.StartTime.Sub $.Data.StartTime) | asXDuration }}
-			{{ .SVG ($.Attrs.X.Add $xoff) ($.Attrs.Y) }}
+			{{ .SVG $xoff 0 }}
 		{{ end }}
-	</g>`))
+	</svg>`))
 
 var makeTemplateCompact = template.Must(template.
 	New("<x-make>").
 	Funcs(funcMap).
-	Parse(`<g class="make">
-		<rect x="{{ .Attrs.X.PercentOf .Data.ParentW }}" y="{{ .Attrs.Y.EM }}"
-		      width="{{ .Data.W.PercentOf .Data.ParentW }}" height="{{ .Data.H.EM }}">
-			<title xml:space="preserve">{{ .Data.Title }}</title>
-		</rect>
-		{{ $xoff := 0 | asXDuration }}
+	Parse(`<svg class="make">
+		    x="{{ .Attrs.X.PercentOf .Data.ParentW }}" y="{{ .Attrs.Y.EM }}"
+		    width="{{ .Data.W.PercentOf .Data.ParentW }}" height="{{ .Data.H.EM }}">
+		<title xml:space="preserve">{{ .Data.Title }}</title>
+		<rect class="background" x="0" y="0" width="100%" height="100%" />
+		{{ $xoff := asXDuration 0 }}
 		{{ range .Data.Restarts }}
-			{{ .SVG ($.Attrs.X.Add $xoff) ($.Attrs.Y) }}
+			{{ .SVG $xoff 0 }}
 			{{ $xoff = $xoff.Add .W }}
 		{{ end }}
-	</g>`))
+	</svg>`))
 
 func (m *SVGMake) SVG(X XDuration, Y YLines) (template.HTML, error) {
 	var makeTemplate *template.Template

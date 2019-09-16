@@ -82,19 +82,19 @@ var profileTemplate = template.Must(template.
 			* svg {
 				overflow: {{ if verboseCommand }}visible{{ else }}hidden{{ end }};
 			}
-			g.make > rect {
+			svg.make > .background {
 				fill: #CCCCCC;
 				filter: url(#inset-shadow-black);
 			}
-			g.restart > rect {
+			svg.restart > .background {
 				fill: #999999;
 				filter: url(#inset-shadow-red);
 			}
-			g.recipe > rect {
+			svg.recipe > .background {
 				fill: #666666;
 				filter: url(#inset-shadow-black);
 			}
-			svg.command > rect.background {
+			svg.command > .background {
 				fill: #333333;
 				filter: url(#inset-shadow-black);
 			}

@@ -104,16 +104,16 @@ func (recipe *SVGRecipe) H() YLines {
 var recipeTemplate = template.Must(template.
 	New("<x-recipe>").
 	Funcs(funcMap).
-	Parse(`<g class="recipe">
-		<rect x="{{ .Attrs.X.PercentOf .Data.Parent.Parent.ParentW }}" y="{{ .Attrs.Y.EM }}"
-		      width="{{ .Data.W.PercentOf .Data.Parent.Parent.ParentW }}" height="{{ .Data.H.EM }}">
-			<title xml:space="preserve">{{ .Data.Title }}</title>
-		</rect>
+	Parse(`<svg class="recipe"
+		    x="{{ .Attrs.X.PercentOf .Data.Parent.W }}" y="{{ .Attrs.Y.EM }}"
+		    width="{{ .Data.W.PercentOf .Data.Parent.W }}" height="{{ .Data.H.EM }}">
+		<title xml:space="preserve">{{ .Data.Title }}</title>
+		<rect class="background" x="0" y="0" width="100%" height="100%" />
 		{{ if verboseCommand }}
 			{{ $yoff := asYLines 0 }}
 			{{ range .Data.SortedCommands }}
 				{{ $xoff := (.StartTime.Sub $.Data.StartTime) | asXDuration }}
-				{{ .SVG ($.Attrs.X.Add $xoff) ($.Attrs.Y.Add $yoff) }}
+				{{ .SVG $xoff $yoff }}
 				{{ $yoff = $yoff.Add .H }}
 			{{ end }}
 		{{ else }}
@@ -130,10 +130,10 @@ var recipeTemplate = template.Must(template.
 					{{ $yCursor = $yCursor.Add $yPending }}
 					{{ $yPending = .H }}
 				{{ end }}
-				{{ .SVG ($.Attrs.X.Add $xoff) ($.Attrs.Y.Add $yCursor) }}
+				{{ .SVG $xoff $yCursor }}
 			{{ end }}
 		{{ end }}
-	</g>`))
+	</svg>`))
 
 func (recipe *SVGRecipe) SVG(X XDuration, Y YLines) (template.HTML, error) {
 	var str strings.Builder

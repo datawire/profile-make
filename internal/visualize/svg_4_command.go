@@ -80,8 +80,8 @@ var commandTemplate = template.Must(template.
 	New("<x-command>").
 	Funcs(funcMap).
 	Parse(`<svg class="command"
-		   x="{{ .Attrs.X.PercentOf .Data.Parent.Parent.Parent.ParentW }}" y="{{ .Attrs.Y.EM }}"
-		   width="{{ .Data.W.PercentOf .Data.Parent.Parent.Parent.ParentW}}" height="{{ .Data.H.EM }}">
+		    x="{{ .Attrs.X.PercentOf .Data.Parent.W }}" y="{{ .Attrs.Y.EM }}"
+		    width="{{ .Data.W.PercentOf .Data.Parent.W }}" height="{{ .Data.H.EM }}">
 		<title xml:space="preserve">{{ .Data.Title }}</title>
 		<rect class="background" x="0" y="0" width="100%" height="100%" />
 		<text x="0" y="0" dominant-baseline="hanging">
@@ -94,7 +94,7 @@ var commandTemplate = template.Must(template.
 		{{ $yoff := .Data.BaseH }}
 		{{ range .Data.SubMakes }}
 			{{ $xoff := (.StartTime.Sub $.Data.StartTime) | asXDuration }}
-			{{ .SVG ($.Attrs.X.Add $xoff) ($.Attrs.Y.Add $yoff) }}
+			{{ .SVG $xoff $yoff }}
 			{{ $yoff = $yoff.Add .H }}
 		{{ end }}
 	</svg>`))

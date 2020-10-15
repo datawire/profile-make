@@ -58,9 +58,6 @@ func Main(args ...string) error {
 
 		cmdline := append(cmdline, "SHELL="+shell)
 		cmd := exec.Command(cmdline[0], cmdline[1:]...)
-		cmd.Env = append(os.Environ(),
-			"MAKEFILES="+filepath.Join(tmpdir, "stub.mk"),
-		)
 		cmd.Stdin = os.Stdin
 		cmd.Stdout = os.Stdout
 		cmd.Stderr = os.Stderr

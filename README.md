@@ -11,7 +11,7 @@ Instead of running
 run
 
    ```console
-   $ profile-make --output-file=profile.json -- MAKE_ARGS
+   $ profile-make run --output-file=profile.json -- MAKE_ARGS
    ```
 
 Then, visualize what happened with

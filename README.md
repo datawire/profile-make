@@ -4,21 +4,21 @@
 
 Instead of running
 
-    ```console
-    $ make MAKE_ARGS
-    ```
+   ```console
+   $ make MAKE_ARGS
+   ```
 
 run
 
-    ```console
-    $ profile-make --output-file=profile.json -- MAKE_ARGS
-    ```
+   ```console
+   $ profile-make --output-file=profile.json -- MAKE_ARGS
+   ```
 
 Then, visualize what happened with
 
-    ```console
-    $ profile-make visualize <profile.json >profile.svg
-    ```
+   ```console
+   $ profile-make visualize <profile.json >profile.svg
+   ```
 
 ## Limitations / gotchas
 
@@ -27,40 +27,41 @@ Then, visualize what happened with
 If your Makefile sets `SHELL`, you'll need to adjust that a touch.
 Instead of writing
 
-    ```Makefile
-    SHELL = myshell
-    ```
+   ```Makefile
+   SHELL = myshell
+   ```
 
 write
 
-    ```Makefile
-    profile-make.SHELL = myshell
-    SHELL = $(profile-make.SHELL)
-    ```
+   ```Makefile
+   profile-make.SHELL = myshell
+   SHELL = $(profile-make.SHELL)
+   ```
+
 ### Pattern-rules with multiple outputs
 
 It has trouble connecting nodes in the DAG for pattern rules with
 multiple outputs.  For example:
 
-    ```Makefile
-    # source files:
-    #  - program.c
-    #  - grammar.y
+   ```Makefile
+   # source files:
+   #  - program.c
+   #  - grammar.y
 
-    all: program
-    .PHONY: all
+   all: program
+   .PHONY: all
 
-    program: program.o grammar.tab.o
-    	cc -o $@ $^
+   program: program.o grammar.tab.o
+   	cc -o $@ $^
 
-    program.o: grammar.tab.h
+   program.o: grammar.tab.h
 
-    %.o: %.c
-    	cc -c -o $@ $<
+   %.o: %.c
+   	cc -c -o $@ $<
 
-    %.tab.h %.tab.c: %.y
-    	bison -d $<
-    ```
+   %.tab.h %.tab.c: %.y
+   	bison -d $<
+   ```
 
 Make sees this DAG as:
 
